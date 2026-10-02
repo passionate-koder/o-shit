@@ -1,0 +1,10 @@
+node_modules/
+.next/
+.next-dev/
+*.tsbuildinfo
+.env*
+!.env.example
+reference/
+test-results/
+reference-home.html
+.local-data/

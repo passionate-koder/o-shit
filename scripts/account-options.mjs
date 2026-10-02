@@ -1,0 +1,8 @@
+import{chromium}from'playwright';import fs from'node:fs/promises';
+const b=await chromium.launch({channel:'msedge',headless:true});const c=await b.newContext({viewport:{width:1440,height:1000},storageState:'reference/accounts/professional-session.json'});await c.route('**/*',r=>['POST','PUT','PATCH','DELETE'].includes(r.request().method())&&!/identitytoolkit|securetoken/.test(new URL(r.request().url()).hostname)?r.abort():r.continue());const p=await c.newPage();
+await p.goto('https://hackculture.io/profile',{waitUntil:'networkidle'});await p.waitForTimeout(2000);await p.goto('https://hackculture.io/onboarding?edit=true&step=2',{waitUntil:'networkidle'});await p.waitForFunction(()=>document.body.innerText.includes('Update your information')&&!document.body.innerText.includes('Loading your profile data'));await p.getByRole('button',{name:'Startup',exact:true}).first().click();await p.waitForTimeout(300);console.log('CATEGORY OPTIONS',await p.locator('body').innerText());
+const labels=await p.locator('[role=option]').allTextContents();console.log('ROLES',labels);
+await fs.writeFile('reference/accounts/professional-category-menu.html',await p.content());
+for(const name of ['Corporate','Self Employed','Venture Capitalist','Investor','Accelerator','University','Non Profit','Government']){
+ const option=p.getByRole('option',{name,exact:true});if(!await option.count())continue;await option.click();await p.waitForTimeout(400);await fs.writeFile(`reference/accounts/category-${name.toLowerCase().replaceAll(' ','-')}.html`,await p.content());console.log('CATEGORY',name,await p.locator('main').innerText());await p.getByRole('button',{name,exact:true}).click();}
+await b.close();
